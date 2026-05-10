@@ -48,32 +48,33 @@ export class Variable extends Expression {
   }
 }
 
-export class Assign extends Statement {
+export class VarDec extends Statement {
   name: string;
-  val: Expression;
-  constructor(name: string, val: Expression) {
+  initializer?: Expression;
+  constructor(name: string, initializer?: Expression) {
     super();
     this.name = name;
-    this.val = val;
+    this.initializer = initializer;
   }
 }
-export class VaraiableDec extends Statement {
-  name: string;
+
+export class Assign extends Statement {
+  variable: Expression;
   val: Expression;
-  constructor(name: string, val: Expression) {
+  constructor(variable: Expression, val: Expression) {
     super();
-    this.name = name;
+    this.variable = variable;
     this.val = val;
   }
 }
 
 export class If extends Statement {
-  ifcondition: Statement;
+  ifcondition: Expression;
   ifBlock: Statement[];
   elseBlock: Statement[];
 
   constructor(
-    ifcondition: Statement,
+    ifcondition: Expression,
     ifBlock: Statement[],
     elseBlock: Statement[],
   ) {
@@ -84,7 +85,7 @@ export class If extends Statement {
   }
 }
 
-export class Gt extends Statement {
+export class Gt extends Expression {
   val1: Expression;
   val2: Expression;
   constructor(val1: Expression, val2: Expression) {
@@ -93,7 +94,7 @@ export class Gt extends Statement {
     this.val2 = val2;
   }
 }
-export class Lt extends Statement {
+export class Lt extends Expression {
   val1: Expression;
   val2: Expression;
   constructor(val1: Expression, val2: Expression) {
@@ -102,7 +103,7 @@ export class Lt extends Statement {
     this.val2 = val2;
   }
 }
-export class Eq extends Statement {
+export class Eq extends Expression {
   val1: Expression;
   val2: Expression;
   constructor(val1: Expression, val2: Expression) {
@@ -112,9 +113,9 @@ export class Eq extends Statement {
   }
 }
 export class While extends Statement {
-  conditions: Statement;
+  conditions: Expression;
   whileBlock: Statement[];
-  constructor(conditions: Statement, whileBlock: Statement[]) {
+  constructor(conditions: Expression, whileBlock: Statement[]) {
     super();
     this.conditions = conditions;
     this.whileBlock = whileBlock;

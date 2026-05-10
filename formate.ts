@@ -1,38 +1,42 @@
 import {
   Add,
   Assign,
+  Eq,
   Expression,
+  Function,
+  FunctionCall,
+  Gt,
+  If,
   Integer,
+  Lt,
   Mul,
-  Variable,
   Print,
   Program,
   Statement,
-  VaraiableDec,
-  If,
-  Gt,
-  Lt,
-  Eq,
+  VarDec,
+  Variable,
   While,
-  Function,
-  FunctionCall,
 } from "./model.ts";
-
+// let x = 10 + x
+// x = 10 + x
+// Just send "x" => Name("x")
+// let
 const statements = new Program([
-  new Function(
-    "add1",
-    [new Variable("x")],
-    [new Assign("x", new Add(new Variable("x"), new Integer(1)))],
-    new Variable("x"),
-  ),
-  new VaraiableDec("x", new Integer(10)),
-  new Print(
-    new Add(
-      new Mul(new Integer(23), new Integer(45)),
-      new FunctionCall("add1", [new Variable("x")]),
-    ),
-  ),
-  new Print(new Variable("x")),
+  // new Function(
+  //   "add1",
+  //   [new Variable("x")],
+  //   [new Assign("x", new Add(new Variable("x"), new Integer(1)))],
+  //   new Variable("x"),
+  // ),
+  // new VaraiableDec("x", new Integer(10)),
+  // new Print(
+  //   new Add(
+  //     new Mul(new Integer(23), new Integer(45)),
+  //     new FunctionCall("add1", [new Variable("x")]),
+  //   ),
+  // ),
+  // new Print(new Variable("x")),
+  new Assign(new Variable("x"), new Add(new Integer(10), new Variable("x"))),
 ]);
 
 const formateProgram = (program: Program) => {
@@ -52,23 +56,19 @@ const formateStatement = (statement: Statement) => {
   if (statement instanceof Print) {
     return `log ${formateExpression(statement.printVal)}`;
   } else if (statement instanceof Assign) {
-    return `${statement.name} = ${formateExpression(statement.val)}`;
-  } else if (statement instanceof VaraiableDec) {
-    return `let ${statement.name} = ${formateExpression(statement.val)}`;
+    return `${formateExpression(statement.variable)} = ${formateExpression(statement.val)}`;
+  } else if (statement instanceof VarDec) {
+    if (statement.initializer)
+      return `let ${statement.name} = ${formateExpression(statement.initializer)}`;
+    return `let ${statement.name}`;
   } else if (statement instanceof If) {
-    return `if ${formateStatement(statement.ifcondition)} {
+    return `if ${formateExpression(statement.ifcondition)} {
       ${formateStatements(statement.ifBlock)}
     } else {
       ${formateStatements(statement.elseBlock)}
      }`;
-  } else if (statement instanceof Gt) {
-    return `${formateExpression(statement.val1)} > ${formateExpression(statement.val2)}`;
-  } else if (statement instanceof Lt) {
-    return `${formateExpression(statement.val1)} < ${formateExpression(statement.val2)}`;
-  } else if (statement instanceof Eq) {
-    return `${formateExpression(statement.val1)} == ${formateExpression(statement.val2)}`;
   } else if (statement instanceof While) {
-    return `while ${formateStatement(statement.conditions)} {
+    return `while ${formateExpression(statement.conditions)} {
       ${formateStatements(statement.whileBlock)}
     }`;
   } else if (statement instanceof Function) {
@@ -98,6 +98,12 @@ const formateExpression = (expression: Expression) => {
     return `${expression.name}`;
   } else if (expression instanceof FunctionCall) {
     return `${expression.fnName} (${formateExpressions(expression.fnArgs)})`;
+  } else if (expression instanceof Gt) {
+    return `${formateExpression(expression.val1)} > ${formateExpression(expression.val2)}`;
+  } else if (expression instanceof Lt) {
+    return `${formateExpression(expression.val1)} < ${formateExpression(expression.val2)}`;
+  } else if (expression instanceof Eq) {
+    return `${formateExpression(expression.val1)} == ${formateExpression(expression.val2)}`;
   }
 };
 console.log(formateProgram(statements));
