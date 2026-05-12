@@ -9,6 +9,7 @@ import {
   GlobalVariable,
   Gt,
   If,
+  Integer,
   LocalVarDec,
   LocalVariable,
   Lt,
@@ -56,21 +57,45 @@ const removeScope = () => {
 const addScope = () => {
   varScope.push({});
 };
-// if i == 1 then global or local
-// -1 then not declared
-const findVar = (val: string) => {
-  for (let i = varScope.length; i > 0; i--) {
-    if (varScope[i][val]) {
-      return i;
+// if i == 1 then outermost (global) scope; larger i == nested; -1 == not declared
+const findVar = (name: string) => {
+  for (let i = varScope.length - 1; i >= 0; i--) {
+    const scope = varScope[i] as Record<string, unknown>;
+    if (scope[name]) {
+      return i + 1;
     }
   }
   return -1;
 };
-const pushVar = (val: string) => {
-  varScope[varScope.length - 1] = { ...varScope[varScope.length - 1], val };
+const pushVar = (name: string) => {
+  const top = varScope.length - 1;
+  varScope[top] = {
+    ...(varScope[top] as Record<string, unknown>),
+    [name]: true,
+  };
 };
-const depth = varScope.length;
-const val = new Program([]);
+// Sample AST for: var x = 23; func f(y) { var r = x + y; return r; }
+//   if x > 10 { var t = 2*x; t = 1 + 1; print t; } else { print f(x); }
+const val = new Program([
+  new VarDec("x", new Integer(23)),
+  new Function(
+    "f",
+    [new Variable("y")],
+    [
+      new VarDec("r", new Add(new Variable("x"), new Variable("y"))),
+    ],
+    new Variable("r"),
+  ),
+  new If(
+    new Gt(new Variable("x"), new Integer(10)),
+    [
+      new VarDec("t", new Mul(new Integer(2), new Variable("x"))),
+      new Assign(new Variable("t"), new Add(new Integer(1), new Integer(1))),
+      new Print(new Variable("t")),
+    ],
+    [new Print(new FunctionCall("f", [new Variable("x")]))],
+  ),
+]);
 
 export const resolveProgram = (prg: Program) => {
   return new Program(resolveStatements(prg.statement));
@@ -91,27 +116,27 @@ export const resolveStatement = (s: Statement) => {
   } else if (s instanceof VarDec) {
     const varScopeNumber = findVar(s.name);
     if (varScopeNumber === 1) {
-      if (s.initializer)
-        new GlobalVarDec(s.name, resolveExpression(s.initializer));
-      else new GlobalVarDec(s.name);
+      if (s.initializer) {
+        return new GlobalVarDec(s.name, resolveExpression(s.initializer));
+      }
+      return new GlobalVarDec(s.name);
     } else if (varScopeNumber === -1) {
       pushVar(s.name);
-      if (depth === 1) {
-        if (s.initializer)
-          new GlobalVarDec(s.name, resolveExpression(s.initializer));
-        else new GlobalVarDec(s.name);
-      } else {
-        if (s.initializer)
-          new LocalVarDec(s.name, resolveExpression(s.initializer));
-        else new LocalVarDec(s.name);
+      if (varScope.length === 1) {
+        if (s.initializer) {
+          return new GlobalVarDec(s.name, resolveExpression(s.initializer));
+        }
+        return new GlobalVarDec(s.name);
       }
-    } else {
-      if (s.initializer)
-        new LocalVarDec(s.name, resolveExpression(s.initializer));
-      else new LocalVarDec(s.name);
+      if (s.initializer) {
+        return new LocalVarDec(s.name, resolveExpression(s.initializer));
+      }
+      return new LocalVarDec(s.name);
     }
-
-    // new VarDec("x") | new VarDec("x", Add(Var("x"), Int(10)))
+    if (s.initializer) {
+      return new LocalVarDec(s.name, resolveExpression(s.initializer));
+    }
+    return new LocalVarDec(s.name);
   } else if (s instanceof If) {
     addScope();
     const condition = resolveExpression(s.ifcondition);
@@ -127,6 +152,9 @@ export const resolveStatement = (s: Statement) => {
     return new While(condition, whileBlock);
   } else if (s instanceof Function) {
     addScope();
+    for (const arg of s.fnArgs) {
+      pushVar((arg as Variable).name);
+    }
     const fnArgs = s.fnArgs.map(
       (arg) => new LocalVariable((arg as Variable).name),
     ) as Expression[];
@@ -150,7 +178,7 @@ export const resolveExpression = (exp: Expression): Expression => {
       return new GlobalVariable(exp.name);
     } else if (findVar(exp.name) === -1) {
       pushVar(exp.name);
-      if (depth === 1) {
+      if (varScope.length === 1) {
         return new GlobalVariable(exp.name);
       } else {
         return new LocalVariable(exp.name);
