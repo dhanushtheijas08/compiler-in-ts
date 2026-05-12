@@ -47,8 +47,40 @@ export class Variable extends Expression {
     this.name = name;
   }
 }
+export class LocalVariable extends Expression {
+  name: string;
+  constructor(name: string) {
+    super();
+    this.name = name;
+  }
+}
+export class GlobalVariable extends Expression {
+  name: string;
+  constructor(name: string) {
+    super();
+    this.name = name;
+  }
+}
 
 export class VarDec extends Statement {
+  name: string;
+  initializer?: Expression;
+  constructor(name: string, initializer?: Expression) {
+    super();
+    this.name = name;
+    this.initializer = initializer;
+  }
+}
+export class LocalVarDec extends Statement {
+  name: string;
+  initializer?: Expression;
+  constructor(name: string, initializer?: Expression) {
+    super();
+    this.name = name;
+    this.initializer = initializer;
+  }
+}
+export class GlobalVarDec extends Statement {
   name: string;
   initializer?: Expression;
   constructor(name: string, initializer?: Expression) {
