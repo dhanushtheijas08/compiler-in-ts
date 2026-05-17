@@ -81,9 +81,7 @@ const val = new Program([
   new Function(
     "f",
     [new Variable("y")],
-    [
-      new VarDec("r", new Add(new Variable("x"), new Variable("y"))),
-    ],
+    [new VarDec("r", new Add(new Variable("x"), new Variable("y")))],
     new Variable("r"),
   ),
   new If(
@@ -138,9 +136,13 @@ export const resolveStatement = (s: Statement) => {
     }
     return new LocalVarDec(s.name);
   } else if (s instanceof If) {
-    addScope();
     const condition = resolveExpression(s.ifcondition);
+
+    addScope();
     const ifBlock = resolveStatements(s.ifBlock);
+    removeScope();
+
+    addScope();
     const elseBlock = resolveStatements(s.elseBlock);
     removeScope();
     return new If(condition, ifBlock, elseBlock);
