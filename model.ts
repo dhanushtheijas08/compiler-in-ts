@@ -1,5 +1,14 @@
 export abstract class Statement {}
 export abstract class Expression {}
+export class Token {
+  tokenType: string;
+  tokenVal: string;
+  constructor(tokenType: string, tokenVal: string) {
+    this.tokenType = tokenType;
+    this.tokenVal = tokenVal;
+  }
+}
+
 export class Program {
   statement: Statement[];
   constructor(statement: Statement[]) {
