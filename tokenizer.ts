@@ -33,6 +33,7 @@ const isLetter = (c: string) => isLower(c) || isUpper(c) || c === "_";
 const isDigit = (n: string) => {
   const val = n.trim();
   if (!val.length) return false;
+  if (val === "." || val === ",") return true;
   return !Number.isNaN(Number(val));
 };
 const isAlphaNum = (c: string) => isLetter(c) || isDigit(c);
@@ -47,6 +48,7 @@ const isAlphaNum = (c: string) => isLetter(c) || isDigit(c);
 
 export const tokenize = (prg: string) => {
   const prgArr = prg.split("");
+  console.log(prgArr);
 
   let tokenPosition = 0;
   let reservedWordsArr: Token[] = [];
@@ -77,6 +79,7 @@ export const tokenize = (prg: string) => {
       while (top(1) !== "\0" && top(1) !== "\n") {
         tokenPosition++;
       }
+      tokenPosition++;
       continue;
     }
 
@@ -98,7 +101,7 @@ export const tokenize = (prg: string) => {
     if (isDigit(topVal)) {
       let tempVal = topVal;
 
-      // 123
+      // 50.1
       while (top(1) !== "\0" && isDigit(top(1)!)) {
         tokenPosition++;
         tempVal += top();
@@ -110,13 +113,12 @@ export const tokenize = (prg: string) => {
     // string
     if (topVal === `"` || topVal === `'`) {
       let tempVal = topVal;
-      tokenPosition++;
 
       while (top(1) !== "\0" && top(1) !== topVal) {
         tokenPosition++;
         tempVal += top();
       }
-      if (top(1) !== topVal) tokenPosition++;
+      if (top(1) === topVal) tokenPosition += 2;
       reservedWordsArr.push(new Token("STRING", tempVal));
       continue;
     }
@@ -133,6 +135,7 @@ export const tokenize = (prg: string) => {
       } else {
         reservedWordsArr.push(new Token("IDENT", tempVal));
       }
+
       tokenPosition++;
       continue;
     }
@@ -153,9 +156,12 @@ export const tokenize = (prg: string) => {
       tokenPosition++;
       continue;
     }
+
+    console.log({ top: top() });
   }
 
   return reservedWordsArr;
 };
 
+// tokenize(fileContent);
 console.log(tokenize(fileContent));
