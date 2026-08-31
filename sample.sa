@@ -1,9 +1,0 @@
-  
-// sample
-/* sample new */
-105;
-sample;
-
-let x = 10.6;
-let val = "sample";
-log(val);
