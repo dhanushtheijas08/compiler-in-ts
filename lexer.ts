@@ -2,6 +2,7 @@ import { file } from "bun";
 import { token, type TokenType as TokenKind } from "./token";
 type Token = {
   type: TokenKind;
+  lexeme: string;
   line: number;
   column: number;
 };
@@ -51,6 +52,7 @@ export class Lexer {
   private pushToken(type: TokenKind) {
     this.tokens.push({
       type,
+      lexeme: this.source.slice(this.start, this.current),
       line: this.line,
       column: this.col - 1,
     });
