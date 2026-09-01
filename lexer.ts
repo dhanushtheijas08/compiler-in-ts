@@ -1,50 +1,112 @@
 import { file } from "bun";
-
+import { token, type TokenType as TokenKind } from "./token";
 type Token = {
-  token: string;
-  col: number;
+  type: TokenKind;
   line: number;
+  column: number;
 };
-
 export class Lexer {
-  private line: number;
-  private col: number;
-  private indexPointer: number;
-  private source: string | null;
-  private tokens: Token[];
-  private start: number;
-  private curr: number;
+  private source: string = "";
+  private tokens: Token[] = [];
 
-  constructor() {
-    this.line = 1;
-    this.col = 1;
-    this.indexPointer = 0;
-    this.source = null;
-    this.tokens = [];
-    this.start = 0;
-    this.curr = 0;
-  }
+  private start: number = 0;
+  private current: number = 0;
+
+  private line: number = 1;
+  private col: number = 1;
+
   private peek() {
-    if (!this.source) throw new Error("source file not found");
+    if (this.current >= this.source.length) {
+      return "\0";
+    }
 
-    const ch = this.source[this.curr];
-    return ch;
+    return this.source[this.current];
   }
   private advance() {
     if (!this.source) throw new Error("source file not found");
 
-    const char = this.source[this.curr];
-    this.curr++;
+    const char = this.source[this.current];
+    this.current++;
+    this.col++;
     return char;
+  }
+  private pushToken(type: TokenKind, line: number, column: number) {
+    this.tokens.push({
+      type,
+      line,
+      column,
+    });
   }
   async tokenize(filePath: string) {
     if (!filePath) throw new Error("source path not found");
 
     this.source = await file(filePath).text();
 
-    while (this.indexPointer < this.source.length) {
-      console.log(this.source[this.indexPointer]);
-      this.indexPointer++;
+    while (this.current < this.source.length) {
+      this.start = this.current;
+      switch (this.advance()) {
+        case "\n":
+          this.line++;
+          this.col = 1;
+          break;
+
+        case " ":
+        case "\t":
+          break;
+
+        case "+":
+          this.pushToken(token.TOK_PLUS, this.line, this.col - 1);
+          break;
+
+        case "-":
+          this.pushToken(token.TOK_MINUS, this.line, this.col - 1);
+          break;
+
+        case "*":
+          this.pushToken(token.TOK_MULTIPLY, this.line, this.col - 1);
+          break;
+
+        case "/":
+          this.pushToken(token.TOK_DIVIDE, this.line, this.col - 1);
+          break;
+
+        case "%":
+          this.pushToken(token.TOK_MODULO, this.line, this.col - 1);
+          break;
+
+        case "=":
+          this.pushToken(token.TOK_ASSIGN, this.line, this.col - 1);
+          break;
+
+        case "<":
+          this.pushToken(token.TOK_LESS_THAN, this.line, this.col - 1);
+          break;
+
+        case ">":
+          this.pushToken(token.TOK_GREATER_THAN, this.line, this.col - 1);
+          break;
+
+        case "(":
+          this.pushToken(token.TOK_LEFT_PAREN, this.line, this.col - 1);
+          break;
+
+        case ")":
+          this.pushToken(token.TOK_RIGHT_PAREN, this.line, this.col - 1);
+          break;
+
+        case "{":
+          this.pushToken(token.TOK_LEFT_BRACE, this.line, this.col - 1);
+          break;
+
+        case "}":
+          this.pushToken(token.TOK_RIGHT_BRACE, this.line, this.col - 1);
+          break;
+
+        default:
+          break;
+      }
     }
+
+    return this.tokens;
   }
 }

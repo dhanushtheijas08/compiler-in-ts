@@ -1,5 +1,22 @@
 // Single Character token
 
-// + = - / ? > < ( ) { } * ^ % :
+// + * - / % = > < ( ) { }
+export const token = {
+  TOK_ASSIGN: "TOKEN_ASSIGN",
 
-export const tokens = {};
+  TOK_PLUS: "TOKEN_PLUS",
+  TOK_MINUS: "TOKEN_MINUS",
+  TOK_MULTIPLY: "TOKEN_MULTIPLY",
+  TOK_DIVIDE: "TOKEN_DIVIDE",
+  TOK_MODULO: "TOKEN_MODULO",
+
+  TOK_LESS_THAN: "TOKEN_LESS_THAN",
+  TOK_GREATER_THAN: "TOKEN_GREATER_THAN",
+
+  TOK_LEFT_PAREN: "TOKEN_LEFT_PAREN",
+  TOK_RIGHT_PAREN: "TOKEN_RIGHT_PAREN",
+
+  TOK_LEFT_BRACE: "TOKEN_LEFT_BRACE",
+  TOK_RIGHT_BRACE: "TOKEN_RIGHT_BRACE",
+} as const;
+export type TokenType = (typeof token)[keyof typeof token];
