@@ -30,11 +30,29 @@ export class Lexer {
     this.col++;
     return char;
   }
-  private pushToken(type: TokenKind, line: number, column: number) {
+  private lookup(n: number = 0) {
+    const index = this.current + n;
+
+    if (index >= this.source.length) {
+      return "\0";
+    }
+    return this.source[this.current + n];
+  }
+
+  private match(char: string) {
+    if (this.lookup(0) === char) {
+      this.advance();
+      return true;
+    }
+
+    return false;
+  }
+
+  private pushToken(type: TokenKind) {
     this.tokens.push({
       type,
-      line,
-      column,
+      line: this.line,
+      column: this.col - 1,
     });
   }
   async tokenize(filePath: string) {
@@ -52,56 +70,87 @@ export class Lexer {
 
         case " ":
         case "\t":
-          break;
-
-        case "+":
-          this.pushToken(token.TOK_PLUS, this.line, this.col - 1);
-          break;
-
-        case "-":
-          this.pushToken(token.TOK_MINUS, this.line, this.col - 1);
-          break;
-
-        case "*":
-          this.pushToken(token.TOK_MULTIPLY, this.line, this.col - 1);
-          break;
-
-        case "/":
-          this.pushToken(token.TOK_DIVIDE, this.line, this.col - 1);
-          break;
-
-        case "%":
-          this.pushToken(token.TOK_MODULO, this.line, this.col - 1);
-          break;
-
-        case "=":
-          this.pushToken(token.TOK_ASSIGN, this.line, this.col - 1);
-          break;
-
-        case "<":
-          this.pushToken(token.TOK_LESS_THAN, this.line, this.col - 1);
-          break;
-
-        case ">":
-          this.pushToken(token.TOK_GREATER_THAN, this.line, this.col - 1);
+        case "\r":
           break;
 
         case "(":
-          this.pushToken(token.TOK_LEFT_PAREN, this.line, this.col - 1);
+          this.pushToken(token.TOK_LEFT_PAREN);
           break;
 
         case ")":
-          this.pushToken(token.TOK_RIGHT_PAREN, this.line, this.col - 1);
+          this.pushToken(token.TOK_RIGHT_PAREN);
           break;
 
         case "{":
-          this.pushToken(token.TOK_LEFT_BRACE, this.line, this.col - 1);
+          this.pushToken(token.TOK_LEFT_BRACE);
           break;
 
         case "}":
-          this.pushToken(token.TOK_RIGHT_BRACE, this.line, this.col - 1);
+          this.pushToken(token.TOK_RIGHT_BRACE);
+          break;
+        case "+":
+          this.pushToken(token.TOK_PLUS);
           break;
 
+        case "-":
+          this.pushToken(token.TOK_MINUS);
+          break;
+
+        case "*":
+          this.pushToken(token.TOK_MULTIPLY);
+          break;
+
+        case "/":
+          if (this.match("/")) {
+            while (this.peek() !== "\n" && this.peek() !== "\0") this.advance();
+          } else this.pushToken(token.TOK_DIVIDE);
+          break;
+        case "%":
+          this.pushToken(token.TOK_MODULO);
+          break;
+
+        case "=":
+          if (this.match("=")) this.pushToken(token.TOK_EQUAL);
+          else this.pushToken(token.TOK_ASSIGN);
+          break;
+
+        case "<":
+          if (this.match("=")) this.pushToken(token.TOK_LESS_EQUAL);
+          else this.pushToken(token.TOK_LESS_THAN);
+          break;
+
+        case ">":
+          if (this.match("=")) this.pushToken(token.TOK_GREATER_EQUAL);
+          else this.pushToken(token.TOK_GREATER_THAN);
+          break;
+
+        case "!":
+          if (this.match("=")) this.pushToken(token.TOK_NOT_EQUAL);
+          else this.pushToken(token.TOK_NOT);
+          break;
+
+        case "&":
+          if (this.match("&")) this.pushToken(token.TOK_AND);
+          break;
+
+        case "|":
+          if (this.match("|")) this.pushToken(token.TOK_OR);
+          break;
+        case "(":
+          this.pushToken(token.TOK_LEFT_PAREN);
+          break;
+
+        case ")":
+          this.pushToken(token.TOK_RIGHT_PAREN);
+          break;
+
+        case "{":
+          this.pushToken(token.TOK_LEFT_BRACE);
+          break;
+
+        case "}":
+          this.pushToken(token.TOK_RIGHT_BRACE);
+          break;
         default:
           break;
       }

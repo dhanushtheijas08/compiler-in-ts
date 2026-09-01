@@ -18,5 +18,15 @@ export const token = {
 
   TOK_LEFT_BRACE: "TOKEN_LEFT_BRACE",
   TOK_RIGHT_BRACE: "TOKEN_RIGHT_BRACE",
+
+  TOK_NOT: "TOKEN_NOT",
+
+  TOK_EQUAL: "TOKEN_EQUAL",
+  TOK_NOT_EQUAL: "TOKEN_NOT_EQUAL",
+  TOK_LESS_EQUAL: "TOKEN_LESS_EQUAL",
+  TOK_GREATER_EQUAL: "TOKEN_GREATER_EQUAL",
+
+  TOK_AND: "TOKEN_AND",
+  TOK_OR: "TOKEN_OR",
 } as const;
 export type TokenType = (typeof token)[keyof typeof token];
