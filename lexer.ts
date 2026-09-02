@@ -49,6 +49,18 @@ export class Lexer {
     return false;
   }
 
+  private isDigit() {
+    const char = this.source[this.current];
+    return char && char >= "0" && char <= "9";
+  }
+
+  private isChar() {
+    const char = this.source[this.current];
+    return (
+      char && ((char >= "a" && char <= "z") || (char >= "A" && char <= "Z"))
+    );
+  }
+
   private pushToken(type: TokenKind) {
     this.tokens.push({
       type,
@@ -64,44 +76,37 @@ export class Lexer {
 
     while (this.current < this.source.length) {
       this.start = this.current;
-      switch (this.advance()) {
+      const char = this.advance();
+      switch (char) {
         case "\n":
           this.line++;
           this.col = 1;
           break;
-
         case " ":
         case "\t":
         case "\r":
           break;
-
         case "(":
           this.pushToken(token.TOK_LEFT_PAREN);
           break;
-
         case ")":
           this.pushToken(token.TOK_RIGHT_PAREN);
           break;
-
         case "{":
           this.pushToken(token.TOK_LEFT_BRACE);
           break;
-
         case "}":
           this.pushToken(token.TOK_RIGHT_BRACE);
           break;
         case "+":
           this.pushToken(token.TOK_PLUS);
           break;
-
         case "-":
           this.pushToken(token.TOK_MINUS);
           break;
-
         case "*":
           this.pushToken(token.TOK_MULTIPLY);
           break;
-
         case "/":
           if (this.match("/")) {
             while (this.peek() !== "\n" && this.peek() !== "\0") this.advance();
@@ -110,50 +115,57 @@ export class Lexer {
         case "%":
           this.pushToken(token.TOK_MODULO);
           break;
-
         case "=":
           if (this.match("=")) this.pushToken(token.TOK_EQUAL);
           else this.pushToken(token.TOK_ASSIGN);
           break;
-
         case "<":
           if (this.match("=")) this.pushToken(token.TOK_LESS_EQUAL);
           else this.pushToken(token.TOK_LESS_THAN);
           break;
-
         case ">":
           if (this.match("=")) this.pushToken(token.TOK_GREATER_EQUAL);
           else this.pushToken(token.TOK_GREATER_THAN);
           break;
-
         case "!":
           if (this.match("=")) this.pushToken(token.TOK_NOT_EQUAL);
           else this.pushToken(token.TOK_NOT);
           break;
-
         case "&":
           if (this.match("&")) this.pushToken(token.TOK_AND);
+          else
+            throw new Error(`Unexpected '&' at ${this.line}:${this.col - 1}`);
           break;
-
         case "|":
           if (this.match("|")) this.pushToken(token.TOK_OR);
-          break;
-        case "(":
-          this.pushToken(token.TOK_LEFT_PAREN);
-          break;
-
-        case ")":
-          this.pushToken(token.TOK_RIGHT_PAREN);
-          break;
-
-        case "{":
-          this.pushToken(token.TOK_LEFT_BRACE);
-          break;
-
-        case "}":
-          this.pushToken(token.TOK_RIGHT_BRACE);
+          else
+            throw new Error(`Unexpected '|' at ${this.line}:${this.col - 1}`);
           break;
         default:
+          if (this.isDigit()) {
+            while (this.isDigit()) {
+              this.advance();
+            }
+            if (this.peek() === ".") {
+              this.advance();
+
+              while (this.isDigit()) {
+                this.advance();
+              }
+            }
+            this.pushToken(token.TOK_NUM);
+          } else if (char === "'" || char == '"') {
+            while (this.peek() !== char && this.peek() !== "\0") {
+              this.advance();
+            }
+            if (this.peek() === "\0") {
+              throw new Error(
+                `Unterminated string at ${this.line}:${this.col}`,
+              );
+            }
+            this.advance();
+            this.pushToken(token.TOK_STRING);
+          }
           break;
       }
     }

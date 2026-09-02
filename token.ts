@@ -28,5 +28,7 @@ export const token = {
 
   TOK_AND: "TOKEN_AND",
   TOK_OR: "TOKEN_OR",
+  TOK_NUM: "TOKEN_NUMBER",
+  TOK_STRING: "TOKEN_STRING"
 } as const;
 export type TokenType = (typeof token)[keyof typeof token];
