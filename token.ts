@@ -18,7 +18,7 @@ export const token = {
 
   TOK_LEFT_BRACE: "TOKEN_LEFT_BRACE",
   TOK_RIGHT_BRACE: "TOKEN_RIGHT_BRACE",
-
+  TOK_SEMICOLON: "TOKEN_SEMICOLON",
   TOK_NOT: "TOKEN_NOT",
 
   TOK_EQUAL: "TOKEN_EQUAL",
@@ -29,6 +29,43 @@ export const token = {
   TOK_AND: "TOKEN_AND",
   TOK_OR: "TOKEN_OR",
   TOK_NUM: "TOKEN_NUMBER",
-  TOK_STRING: "TOKEN_STRING"
+  TOK_STRING: "TOKEN_STRING",
+  TOK_IDENTIFIER: "TOKEN_IDENTIFIERS",
 } as const;
 export type TokenType = (typeof token)[keyof typeof token];
+
+export const keywords = {
+  if: "TOKEN_IF",
+  else: "TOKEN_ELSE",
+  for: "TOKEN_FOR",
+  while: "TOKEN_WHILE",
+  break: "TOKEN_BREAK",
+  continue: "TOKEN_CONTINUE",
+  return: "TOKEN_RETURN",
+  func: "TOKEN_FUNCTION",
+  print: "TOKEN_PRINT",
+
+  true: "TOKEN_TRUE",
+  false: "TOKEN_FALSE",
+  null: "TOKEN_NULL",
+
+  var: "TOKEN_VAR",
+};
+export type KeywordTypes = (typeof keywords)[keyof typeof keywords];
+
+export const binaryOperators = [
+  "+",
+  "-",
+  "*",
+  "/",
+  "%",
+  "==",
+  "!=",
+  "<",
+  "<=",
+  ">",
+  ">=",
+  "&&",
+  "||",
+];
+export type BinaryOperator = (typeof binaryOperators)[number];

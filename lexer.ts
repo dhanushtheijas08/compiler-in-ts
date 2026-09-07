@@ -1,7 +1,12 @@
 import { file } from "bun";
-import { token, type TokenType as TokenKind } from "./token";
-type Token = {
-  type: TokenKind;
+import {
+  keywords,
+  token,
+  type KeywordTypes,
+  type TokenType as TokenKind,
+} from "./token";
+export type Token = {
+  type: TokenKind | KeywordTypes;
   lexeme: string;
   line: number;
   column: number;
@@ -61,7 +66,15 @@ export class Lexer {
     );
   }
 
-  private pushToken(type: TokenKind) {
+  private isAlphaNum() {
+    const char = this.source[this.current];
+    return char && (this.isDigit() || this.isChar() || char === "_");
+  }
+  private isKeyword(word: string): boolean {
+    return word in keywords;
+  }
+
+  private pushToken(type: TokenKind | KeywordTypes) {
     this.tokens.push({
       type,
       lexeme: this.source.slice(this.start, this.current),
@@ -97,6 +110,9 @@ export class Lexer {
           break;
         case "}":
           this.pushToken(token.TOK_RIGHT_BRACE);
+          break;
+        case ";":
+          this.pushToken(token.TOK_SEMICOLON);
           break;
         case "+":
           this.pushToken(token.TOK_PLUS);
@@ -165,6 +181,20 @@ export class Lexer {
             }
             this.advance();
             this.pushToken(token.TOK_STRING);
+          } else if (this.isAlphaNum()) {
+            while (this.isAlphaNum() && this.peek() !== "\0") {
+              this.advance();
+            }
+            const word = this.source.slice(this.start, this.current);
+            if (this.isKeyword(word)) {
+              this.pushToken(
+                keywords[word as keyof typeof keywords] as KeywordTypes,
+              );
+            } else {
+              this.pushToken(token.TOK_IDENTIFIER);
+            }
+          } else {
+            throw new Error("Invalid code");
           }
           break;
       }
