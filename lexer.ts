@@ -29,8 +29,6 @@ export class Lexer {
     return this.source[this.current];
   }
   private advance() {
-    if (!this.source) throw new Error("source file not found");
-
     const char = this.source[this.current];
     this.current++;
     this.col++;
@@ -54,8 +52,7 @@ export class Lexer {
     return false;
   }
 
-  private isDigit() {
-    const char = this.source[this.current];
+  private isDigit(char: string | undefined) {
     return char && char >= "0" && char <= "9";
   }
 
@@ -68,7 +65,7 @@ export class Lexer {
 
   private isAlphaNum() {
     const char = this.source[this.current];
-    return char && (this.isDigit() || this.isChar() || char === "_");
+    return char && (this.isDigit(char) || this.isChar() || char === "_");
   }
   private isKeyword(word: string): boolean {
     return word in keywords;
@@ -89,7 +86,7 @@ export class Lexer {
 
     while (this.current < this.source.length) {
       this.start = this.current;
-      const char = this.advance();
+      let char = this.advance();
       switch (char) {
         case "\n":
           this.line++;
@@ -158,20 +155,43 @@ export class Lexer {
             throw new Error(`Unexpected '|' at ${this.line}:${this.col - 1}`);
           break;
         default:
-          if (this.isDigit()) {
-            while (this.isDigit()) {
+          if (this.isDigit(char)) {
+            while (this.isDigit(this.peek())) {
               this.advance();
             }
             if (this.peek() === ".") {
               this.advance();
 
-              while (this.isDigit()) {
-                this.advance();
+              if (this.isDigit(this.peek())) {
+                while (this.isDigit(this.peek())) {
+                  this.advance();
+                }
+              } else {
+                throw new Error(`Invalid number at ${this.line}:${this.col}`);
               }
+            }
+            if (this.isChar() || this.peek() === "_") {
+              throw new Error(`Invalid number at ${this.line}:${this.col}`);
             }
             this.pushToken(token.TOK_NUM);
           } else if (char === "'" || char == '"') {
             while (this.peek() !== char && this.peek() !== "\0") {
+              if (this.peek() === "\n") {
+                throw new Error(
+                  `Unterminated string at ${this.line}:${this.col}`,
+                );
+              }
+
+              if (this.peek() === "\\") {
+                this.advance();
+
+                if (this.peek() !== "\0") {
+                  this.advance();
+                }
+
+                continue;
+              }
+
               this.advance();
             }
             if (this.peek() === "\0") {
