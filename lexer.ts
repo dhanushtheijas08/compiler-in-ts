@@ -56,16 +56,14 @@ export class Lexer {
     return char && char >= "0" && char <= "9";
   }
 
-  private isChar() {
-    const char = this.source[this.current];
+  private isChar(char: string | undefined) {
     return (
       char && ((char >= "a" && char <= "z") || (char >= "A" && char <= "Z"))
     );
   }
 
-  private isAlphaNum() {
-    const char = this.source[this.current];
-    return char && (this.isDigit(char) || this.isChar() || char === "_");
+  private isAlphaNum(char: string | undefined) {
+    return char && (this.isDigit(char) || this.isChar(char) || char === "_");
   }
   private isKeyword(word: string): boolean {
     return word in keywords;
@@ -170,7 +168,7 @@ export class Lexer {
                 throw new Error(`Invalid number at ${this.line}:${this.col}`);
               }
             }
-            if (this.isChar() || this.peek() === "_") {
+            if (this.isChar(this.peek()) || this.peek() === "_") {
               throw new Error(`Invalid number at ${this.line}:${this.col}`);
             }
             this.pushToken(token.TOK_NUM);
@@ -201,8 +199,8 @@ export class Lexer {
             }
             this.advance();
             this.pushToken(token.TOK_STRING);
-          } else if (this.isAlphaNum()) {
-            while (this.isAlphaNum() && this.peek() !== "\0") {
+          } else if (this.isAlphaNum(char)) {
+            while (this.isAlphaNum(this.peek()) && this.peek() !== "\0") {
               this.advance();
             }
             const word = this.source.slice(this.start, this.current);
