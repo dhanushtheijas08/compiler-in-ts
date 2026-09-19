@@ -1,2 +1,4 @@
-12.23.23
-==
+sample = 10;
+while(sample == 10) {
+    var sample = 10;
+}

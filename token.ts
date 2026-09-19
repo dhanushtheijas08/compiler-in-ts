@@ -53,19 +53,5 @@ export const keywords = {
 };
 export type KeywordTypes = (typeof keywords)[keyof typeof keywords];
 
-export const binaryOperators = [
-  "+",
-  "-",
-  "*",
-  "/",
-  "%",
-  "==",
-  "!=",
-  "<",
-  "<=",
-  ">",
-  ">=",
-  "&&",
-  "||",
-];
+export const binaryOperators = ["+", "-", "*", "/", "%"];
 export type BinaryOperator = (typeof binaryOperators)[number];
